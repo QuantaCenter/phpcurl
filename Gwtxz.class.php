@@ -11,6 +11,8 @@ class Gwtxz {
 
 	public $cookie = '';
 	
+	private $username = '';//学号
+	
 	
 	public function __construct(){
 		
@@ -43,6 +45,21 @@ class Gwtxz {
 	}
 	
 	/**
+	 * 外部接口调用
+	 * @param string $username
+	 * @param string $password
+	 * @return boolean
+	 */
+	public function login($username, $password){
+		$field = array(
+				'username'=> $username,
+				'password'=> $password,
+				'login-form-type'=> 'pwd', //$_POST['login-form-type']
+		);
+		return $this->checkField($field);
+	}
+	
+	/**
 	 * 判断是否登录成功
 	 * 发送表单数据，并存储cookie
 	 * @param array $field //表单的数据
@@ -60,6 +77,8 @@ class Gwtxz {
 		if (empty($refer)){
 			$refer = $this->getReferUrl();
 		}
+		//save username
+		$this->username = $field['username'];
 		
 		$param = '';
 		foreach ($field as $key => $value){
@@ -107,10 +126,6 @@ class Gwtxz {
 		
 		$pattern ='#<TITLE>Success<\/TITLE>#';
 		if(preg_match($pattern, $content)){
-			//爬取用户信息，
-			$requestUrl = $this->getRequestUrl($field['username'], "4");
-			$this->saveContent($requestUrl);
-			
 			return true;
 		}else{
 			return false;
@@ -194,11 +209,14 @@ class Gwtxz {
 	}
 	
 	/**
-	 * 获取用户的详细信息
+	 * 获取用户的详细信息,
+	 * 这个是一个耗时方法，建议只调用一次
 	 * @return multitype:array |NULL
 	 */
 	public function getUser(){
-		
+		//爬取用户信息，
+		$requestUrl = $this->getRequestUrl($this->username, "4");
+		$this->saveContent($requestUrl);
 		$pattern = '#<font id=\"(\w)+\" value=\"(.)+?\">(.*)</font>#';
 		if (preg_match_all($pattern, $this->getContent(), $matches)) {
 			$arr = $matches[3];
@@ -221,6 +239,49 @@ class Gwtxz {
 		
 	}
 	
+	/**
+	 * 获取课程表
+	 * @return
+	 * 'name' => "电路与电子技术",
+	 * 'teacherName' => '李心广',
+	 * 'place'=>'南C403',
+	 * 'week'=> 1
+	 * 'startSection'=>2,
+	 * 'endSection'=>5	
+	 */
+	public function getCurriculum(){
+		$requestUrl = $this->getRequestUrl($this->username, 2);
+		$this->saveContent($requestUrl);
+		$pageContent = $this->getContent();
+		$patten = '#<td align=\"Center\"( rowspan=\"\d\"){0,1}( width=\"[\d]+%\"){0,1}>([^\s]+?)<br>([^\s]*?)<br>([^\s]*?)<br>([^\s]*?)</td>#';
+		$pageContent = iconv("gbk", "utf-8", $pageContent);
+		if(preg_match_all($patten, $pageContent, $matches)){
+			$len = count($matches[0]);
+			$weekArr = array(
+				"周日" =>0, "周一" =>1, "周二" => 2, "周三" =>3, "周四" =>4, "周五" =>5, "周六" =>6
+			);
+			$data = array();
+			for($i = 0; $i < $len; $i++){
+				$name = $matches[3][$i];
+				$timeStr = $matches[4][$i];
+				$week = substr($timeStr, 0, 6);
+				$index = strpos($timeStr, "节");
+				$times = explode(",", substr($timeStr, 9, $index - 9));
+				$arr = array(
+						'name' => $name,
+						'teacherName' => $name,
+						'place'=>$matches[6][$i],
+						'week'=> $weekArr[$week],
+						'startSection'=>$times[0],
+						'endSection'=>$times[count($times) - 1]			
+				);
+				$data[] = $arr;
+			}
+			return $data;
+		}else{
+			return null;
+		}
+	}
 	
 	
 	
