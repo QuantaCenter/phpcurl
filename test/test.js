@@ -1,49 +1,35 @@
-# gwapi
-用nodejs制作的扒取数字广外信息的工具
-
-##安装
-npm install gwapi <br>
-或者 <br/>
-git clone https://github.com/zjy01/gwapi.git
-
-##功能
-`
-* 获取宿舍信息
-* 获取课表
-* 获取考试成绩
-
-`
-##代码展示
-```javascript
+/**
+ * Created by zjy on 15-9-26.
+ */;
 var gw=require("../../gwapi");
 var g=new gw();
 var $user={
-    "username":"your 学号",
-    "password":"your 密码"
+    "username":"your ѧ��",
+    "password":"your ����"
 };
 g.login($user, function(err,res){
     if(err){
         return ;
     }
-    //获取用户信息
+    //��ȡ�û���Ϣ
     var $data1={
         "req":"getUser"
     };
     res.do($data1,function (info) {
         console.log(info);
     });
-    //获取课表
+    //��ȡ�α�
     var $data2={
         "req":"getCourse"
     };
     res.do($data2,function (info) {
         console.log(info);
     });
-    //获取成绩
+    //��ȡ�ɼ�
     var $msg={
-        xn:"2013-2014",//学年
-        xq:"1",//学期
-        get:"2"//1表示按学期获取，2表示按学年获取
+        xn:"2013-2014",//ѧ��
+        xq:"1",//ѧ��
+        get:"2"//1��ʾ��ѧ�ڻ�ȡ��2��ʾ��ѧ���ȡ
     };
     var $data3={
         "req":"getGrade",
@@ -53,5 +39,3 @@ g.login($user, function(err,res){
         console.log(info);
     });
 });
-
-```
