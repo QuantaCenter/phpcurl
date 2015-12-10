@@ -245,8 +245,13 @@ class Gwtxz {
                                 'degree' => $arr2[4],
                                 'profession' => $arr2[5],
                                 'birthday' => $arr3[0],
-                                'position' => $arr3[1]  // 没有去掉中文的括号
+                                'position' => $arr3[1]
                         );
+                        foreach($data as $k=>$v){
+                            $data[$k] = iconv("gb2312","utf-8",$v);
+                        }
+                        $data['gender'] .= "性";   //统一格式
+                        $data['position'] = explode('（',$data['position'])[0];  //去掉中文空格后的文本
                     }else{
                         return null;
                     }
@@ -258,7 +263,7 @@ class Gwtxz {
             }
 		}else{
 			// 学生
-			$requestUrl = $this->getRequestUrl($this->username,1);
+			$requestUrl = $this->getRequestUrl($this->username,4);
             $this->saveContent($requestUrl);
 			$pattern = '#<font id=\"(\w)+\" value=\"(.)+?\">(.*)</font>#';
 			if (preg_match_all($pattern, $this->getContent(), $matches)) {
