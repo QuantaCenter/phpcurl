@@ -181,18 +181,27 @@ class Gwtxz {
 		$requestUrl = '';
 		switch ($type){
 			case 1:
+				// 学生基础信息
 				$requestUrl = 'http://jw.gdufs.edu.cn/xsgrxx.aspx?xh='.$schoolNumber;
 				break;
 			case 2:
+				// 学生课表
 				$requestUrl = 'http://jw.gdufs.edu.cn/xskbcx.aspx?xh='.$schoolNumber;
 				break;
 			case 3:
+				// 学生档案
 				$requestUrl = 'http://xg.gdufs.edu.cn/epstar/app/template.jsp?mainobj=SWMS/XSJBXX/T_XSJBXX_XSJBB&tfile=XGMRMB/detail_BDTAG';
 				break;
 			case 4:
+				// 学生宿舍信息
 				$requestUrl = "http://xg.gdufs.edu.cn/epstar/app/template.jsp?mainobj=SWMS/SSGLZXT/SSAP/V_SS_SSXXST&tfile=XSCKMB/BDTAG&filter=V_SS_SSXXST:XH='".$schoolNumber."'";
 				break;
+			case 5:
+				// 教师基础信息
+				$requestUrl = 'http://jw.gdufs.edu.cn/js_grjl.aspx?zgh='.$schoolNumber;
+				break;
 			default:
+				// 学生基础信息
 				$requestUrl = 'http://jw.gdufs.edu.cn/xsgrxx.aspx?xh='.$schoolNumber;
 				
 		}
@@ -213,29 +222,64 @@ class Gwtxz {
 	 * 这个是一个耗时方法，建议只调用一次
 	 * @return multitype:array |NULL
 	 */
-	public function getUser(){
+	public function getUser($identity){
 		//爬取用户信息，
-		$requestUrl = $this->getRequestUrl($this->username, "4");
-		$this->saveContent($requestUrl);
-		$pattern = '#<font id=\"(\w)+\" value=\"(.)+?\">(.*)</font>#';
-		if (preg_match_all($pattern, $this->getContent(), $matches)) {
-			$arr = $matches[3];
-			$data = array(
-					'studentNumber' => $arr[0],
-					'name' => $arr[1],
-					'gender' => $arr[2],
-					'academy' => $arr[3],
-					'grade' => $arr[4],
-					'major' => $arr[5],
-					'campus' => $arr[6],
-					'block' => $arr[8],
-					'floor' => $arr[9],
-					'room' => $arr[10]
-			);
-			return $data;
+		if($identity == 'teach'){
+			// 教师
+			$requestUrl = $this->getRequestUrl($this->username,5);
+            $this->saveContent($requestUrl);
+            $pattern1 = '#<td(.*)><span id=\"(\w)+\">(.*)</span></td>#';
+            $pattern2 = '#<option selected=\"selected\" value=\"(.*)\">(.*)</option>#';
+            $pattern3 = '#<input name=\"(.*)\" type=\"text\" value=\"([^\"]*)\" (((\w)+)=\"(.*)\" )+/>#';
+			if (preg_match_all($pattern1, $this->getContent(), $matches1)) {
+                if (preg_match_all($pattern2, $this->getContent(), $matches2)) {
+                    if (preg_match_all($pattern3, $this->getContent(), $matches3)) {
+                        $arr1 = $matches1[3];
+                        $arr2 = $matches2[2];
+                        $arr3 = $matches3[2];
+                        $data = array(
+                                'teacherNumber' => $arr1[0],
+                                'name' => $arr1[1],
+                                'gender' => $arr2[0],
+                                'academy' => $arr2[2],
+                                'degree' => $arr2[4],
+                                'profession' => $arr2[5],
+                                'birthday' => $arr3[0],
+                                'position' => $arr3[1]  // 没有去掉中文的括号
+                        );
+                    }else{
+                        return null;
+                    }
+                }else{
+                    return null;
+                }
+			}else{
+                return null;
+            }
 		}else{
-			return null;
+			// 学生
+			$requestUrl = $this->getRequestUrl($this->username,1);
+            $this->saveContent($requestUrl);
+			$pattern = '#<font id=\"(\w)+\" value=\"(.)+?\">(.*)</font>#';
+			if (preg_match_all($pattern, $this->getContent(), $matches)) {
+				$arr = $matches[3];
+				$data = array(
+						'studentNumber' => $arr[0],
+						'name' => $arr[1],
+						'gender' => $arr[2],
+						'academy' => $arr[3],
+						'grade' => $arr[4],
+						'major' => $arr[5],
+						'campus' => $arr[6],
+						'block' => $arr[8],
+						'floor' => $arr[9],
+						'room' => $arr[10]
+				);
+			}else{
+                return null;
+            }
 		}
+		return $data;
 		
 	}
 	

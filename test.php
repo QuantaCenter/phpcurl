@@ -9,7 +9,6 @@ $field = array(
 		'login-form-type'=> 'pwd', //$_POST['login-form-type']
 	);
 
-
 $requestUrl = 'http://tsg.gdufs.edu.cn/gwd_local/login_ibm.jsp';
 $formUrl = 'http://tsg.gdufs.edu.cn/pkmslogin.form';
 
@@ -17,8 +16,8 @@ $formUrl = 'http://tsg.gdufs.edu.cn/pkmslogin.form';
 $isLogin = $user->checkField($field, $formUrl);
 var_dump($isLogin);
 
-
-$temp = $user->getUser();
+$identity = ($_POST['identity'] == 'teach')?'teach':'';
+$temp = $user->getUser($identity);
 var_dump($temp);
 
 
