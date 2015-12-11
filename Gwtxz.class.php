@@ -228,20 +228,33 @@ class Gwtxz {
 			// 教师
 			$requestUrl = $this->getRequestUrl($this->username,5);
             $this->saveContent($requestUrl);
-            $pattern1 = '#<td(.*)><span id=\"(\w)+\">(.*)</span></td>#';
-            $pattern2 = '#<option selected=\"selected\" value=\"(.*)\">(.*)</option>#';
-            $pattern3 = '#<input name=\"(.*)\" type=\"text\" value=\"([^\"]*)\" (((\w)+)=\"(.*)\" )+/>#';
-			if (preg_match_all($pattern1, $this->getContent(), $matches1)) {
-                if (preg_match_all($pattern2, $this->getContent(), $matches2)) {
+            $arr2 = array();
+            $pattern1 = '#<td(.*)><span id=\"(zgh1|xm)\">(.*)</span></td>#';
+            $pattern2 = '#<select name=\"(xb|mz|zzmm|bm|xw|zc)\" [\s\S]+?</select>#';
+            if(!preg_match_all($pattern2, $this->getContent(), $matches2)){
+            		return null;
+            }
+            foreach ($matches2[0] as $key => $value) {
+            		$pattern2 = '#<option selected=\"selected\" value=\"(.*)\">(.*)</option>#';
+            		preg_match_all($pattern2, $value, $matches21);
+            		if(empty($matches21[0])){
+            			$pattern2 = '#<option value=\"(.*)\">(.*)</option>#';
+            			preg_match_all($pattern2, $value, $matches21);
+            		}
+            		array_push($arr2, $matches21[2][0]);
+            }
+            $pattern3 = '#<input name=\"(csrq|zw)\" type=\"text\" value=\"([^\"]*)\" (((\w)+)=\"(.*)\" )+/>#';
+	        if (preg_match_all($pattern1, $this->getContent(), $matches1)) {
                     if (preg_match_all($pattern3, $this->getContent(), $matches3)) {
                         $arr1 = $matches1[3];
-                        $arr2 = $matches2[2];
                         $arr3 = $matches3[2];
                         $data = array(
                                 'teacherNumber' => $arr1[0],
                                 'name' => $arr1[1],
                                 'gender' => $arr2[0],
-                                'academy' => $arr2[2],
+                                'nation' => $arr2[1],
+                                'politics' => $arr2[2],
+                                'academy' => $arr2[3],
                                 'degree' => $arr2[4],
                                 'profession' => $arr2[5],
                                 'birthday' => $arr3[0],
@@ -255,12 +268,9 @@ class Gwtxz {
                     }else{
                         return null;
                     }
-                }else{
+            }else{
                     return null;
-                }
-			}else{
-                return null;
-            }
+			}
 		}else{
 			// 学生
 			$requestUrl = $this->getRequestUrl($this->username,4);
